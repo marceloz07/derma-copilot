@@ -102,6 +102,19 @@ export const env = {
   ANTHROPIC_MODEL:   optional('ANTHROPIC_MODEL', 'claude-sonnet-4-6'),
   AI_TIMEOUT_MS:     optionalInt('AI_TIMEOUT_MS', 30_000),
 
+  // ── SendGrid / Email transaccional ───────────────────────────────────────────
+  SENDGRID_API_KEY:    optional('SENDGRID_API_KEY', ''),
+  SENDGRID_FROM_EMAIL: optional('SENDGRID_FROM_EMAIL', 'reportes@dermacopilot.com'),
+  SENDGRID_FROM_NAME:  optional('SENDGRID_FROM_NAME', 'Derma Copilot'),
+
+  // ── Datos de la clínica (reportes) ───────────────────────────────────────────
+  CLINICA_NOMBRE:     optional('CLINICA_NOMBRE', 'Derma Copilot'),
+  CLINICA_DIRECCION:  optional('CLINICA_DIRECCION', 'Av. Dermatología 123'),
+  CLINICA_TELEFONO:   optional('CLINICA_TELEFONO', '+1 (555) 000-0000'),
+  CLINICA_EMAIL:      optional('CLINICA_EMAIL', 'contacto@dermacopilot.com'),
+  CLINICA_MEDICO:     optional('CLINICA_MEDICO', 'Dr. Especialista en Dermatología'),
+  CLINICA_CEDULA:     optional('CLINICA_CEDULA', ''),
+
   // ── URLs del Sistema ──────────────────────────────────────────────────────────
   API_URL:    optional('API_URL', 'http://localhost:3000'),
   CLIENT_URL: optional('CLIENT_URL', 'http://localhost:5173'),

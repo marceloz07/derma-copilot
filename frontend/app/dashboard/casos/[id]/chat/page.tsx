@@ -228,8 +228,14 @@ function PanelContexto({
           className="w-full"
           size="sm"
         >
-          📄 Generar reporte
+          📄 Ver resumen IA
         </Button>
+
+        <Link href={`/dashboard/casos/${casoId}/reporte`} className="block">
+          <Button variant="primary" className="w-full" size="sm">
+            📋 Generar reporte PDF
+          </Button>
+        </Link>
 
         <Link href="/dashboard">
           <Button variant="ghost" className="w-full" size="sm">

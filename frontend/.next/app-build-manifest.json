@@ -11,11 +11,6 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/dashboard/casos/nuevo/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/casos/nuevo/page.js"
-    ],
     "/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -26,15 +21,35 @@
       "static/chunks/main-app.js",
       "static/chunks/app/register/page.js"
     ],
+    "/dashboard/casos/nuevo/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/casos/nuevo/page.js"
+    ],
     "/dashboard/casos/[id]/chat/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/casos/[id]/chat/page.js"
     ],
-    "/_not-found/page": [
+    "/dashboard/casos/[id]/reporte/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
+      "static/chunks/app/dashboard/casos/[id]/reporte/page.js"
+    ],
+    "/dashboard/pacientes/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/pacientes/page.js"
+    ],
+    "/dashboard/casos/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/casos/page.js"
+    ],
+    "/dashboard/reportes/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/reportes/page.js"
     ]
   }
 }

@@ -3,7 +3,7 @@
 // Cliente API para el módulo de análisis de casos.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { AnalizarCasoData, AnalizarCasoResponse } from '../types/casos';
+import type { AnalizarCasoData, AnalizarCasoResponse, CasoListItem } from '../types/casos';
 import { getAccessToken } from './auth';
 import { ApiError } from './api';
 
@@ -60,6 +60,9 @@ export function fileToBase64(file: File): Promise<string> {
 // ── API calls ─────────────────────────────────────────────────────────────────
 
 export const casosApi = {
+  listar: () =>
+    request<{ casos: CasoListItem[] }>('/api/casos', { method: 'GET' }),
+
   analizar: (data: AnalizarCasoData) =>
     request<AnalizarCasoResponse>('/api/casos/analizar', {
       method: 'POST',

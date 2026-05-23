@@ -48,3 +48,11 @@ export interface AnalizarCasoResponse {
   casoId:   string;
   analisis: AnalisisDermatologico;
 }
+
+/** Item devuelto por GET /api/casos */
+export interface CasoListItem {
+  id:        string;
+  sintomas:  string;
+  analisis:  AnalisisDermatologico;
+  createdAt: string;
+}
