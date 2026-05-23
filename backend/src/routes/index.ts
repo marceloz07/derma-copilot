@@ -5,6 +5,7 @@ import casosRouter     from './casos.routes';
 import consultasRouter from './consultas.routes';
 import reportesRouter  from './reportes.routes';
 import pacientesRouter from './pacientes.routes';
+import negocioRouter   from './negocio.routes';
 
 const router = Router();
 
@@ -27,5 +28,6 @@ router.use('/casos',      casosRouter);
 router.use('/consultas',  consultasRouter);
 router.use('/reportes',   reportesRouter);
 router.use('/pacientes',  pacientesRouter);
+router.use('/negocio',    negocioRouter);
 
 export default router;

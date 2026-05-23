@@ -1,8 +1,5 @@
 {
-  "/dashboard/casos/nuevo/page": "app/dashboard/casos/nuevo/page.js",
-  "/dashboard/casos/page": "app/dashboard/casos/page.js",
-  "/dashboard/pacientes/page": "app/dashboard/pacientes/page.js",
-  "/dashboard/casos/[id]/chat/page": "app/dashboard/casos/[id]/chat/page.js",
-  "/dashboard/casos/[id]/reporte/page": "app/dashboard/casos/[id]/reporte/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/dashboard/negocio/page": "app/dashboard/negocio/page.js",
   "/dashboard/reportes/page": "app/dashboard/reportes/page.js"
 }
