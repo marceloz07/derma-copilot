@@ -1,8 +1,8 @@
-// File: C:\Users\Chelo\Desktop\DERMA_COPILOT\frontend\app\dashboard\reportes\page.tsx
-import * as entry from '../../../../../app/dashboard/reportes/page.js'
+// File: C:\Users\Chelo\Desktop\DERMA_COPILOT\frontend\app\dashboard\automatizaciones\page.tsx
+import * as entry from '../../../../../app/dashboard/automatizaciones/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
-type TEntry = typeof import('../../../../../app/dashboard/reportes/page.js')
+type TEntry = typeof import('../../../../../app/dashboard/automatizaciones/page.js')
 
 // Check that the entry is a valid entry
 checkFields<Diff<{

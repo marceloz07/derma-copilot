@@ -119,6 +119,19 @@ export const env = {
   API_URL:    optional('API_URL', 'http://localhost:3000'),
   CLIENT_URL: optional('CLIENT_URL', 'http://localhost:5173'),
 
+  // ── Google Calendar OAuth2 ────────────────────────────────────────────────────
+  // Consola: https://console.cloud.google.com → APIs & Services → Credentials
+  GOOGLE_CLIENT_ID:     optional('GOOGLE_CLIENT_ID', ''),
+  GOOGLE_CLIENT_SECRET: optional('GOOGLE_CLIENT_SECRET', ''),
+  GOOGLE_REDIRECT_URI:  optional('GOOGLE_REDIRECT_URI', 'http://localhost:3001/api/automatizaciones/google/callback'),
+
+  // ── Twilio (SMS + WhatsApp) ───────────────────────────────────────────────────
+  // Dashboard: https://console.twilio.com
+  TWILIO_ACCOUNT_SID:     optional('TWILIO_ACCOUNT_SID', ''),
+  TWILIO_AUTH_TOKEN:      optional('TWILIO_AUTH_TOKEN', ''),
+  TWILIO_PHONE_NUMBER:    optional('TWILIO_PHONE_NUMBER', ''),           // +1234567890 para SMS
+  TWILIO_WHATSAPP_NUMBER: optional('TWILIO_WHATSAPP_NUMBER', '+14155238886'), // sandbox Twilio
+
 } as const;
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import { ApiResponse } from '../types';
-import authRouter      from './auth.routes';
-import casosRouter     from './casos.routes';
-import consultasRouter from './consultas.routes';
-import reportesRouter  from './reportes.routes';
-import pacientesRouter from './pacientes.routes';
-import negocioRouter   from './negocio.routes';
+import authRouter             from './auth.routes';
+import casosRouter            from './casos.routes';
+import consultasRouter        from './consultas.routes';
+import reportesRouter         from './reportes.routes';
+import pacientesRouter        from './pacientes.routes';
+import negocioRouter          from './negocio.routes';
+import automatizacionesRouter from './automatizaciones.routes';
 
 const router = Router();
 
@@ -23,11 +24,12 @@ router.get('/health', (_req, res) => {
 });
 
 // ── Módulos ───────────────────────────────────────────────────────────────────
-router.use('/auth',       authRouter);
-router.use('/casos',      casosRouter);
-router.use('/consultas',  consultasRouter);
-router.use('/reportes',   reportesRouter);
-router.use('/pacientes',  pacientesRouter);
-router.use('/negocio',    negocioRouter);
+router.use('/auth',            authRouter);
+router.use('/casos',           casosRouter);
+router.use('/consultas',       consultasRouter);
+router.use('/reportes',        reportesRouter);
+router.use('/pacientes',       pacientesRouter);
+router.use('/negocio',         negocioRouter);
+router.use('/automatizaciones', automatizacionesRouter);
 
 export default router;

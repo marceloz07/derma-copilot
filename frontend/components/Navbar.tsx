@@ -5,11 +5,12 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '../hooks/useAuth';
 
 const NAV_LINKS = [
-  { href: '/dashboard',          label: 'Inicio' },
-  { href: '/dashboard/pacientes',label: 'Pacientes' },
-  { href: '/dashboard/casos',    label: 'Casos' },
-  { href: '/dashboard/reportes', label: 'Reportes' },
-  { href: '/dashboard/negocio',  label: '💼 Negocio' },
+  { href: '/dashboard',                    label: 'Inicio' },
+  { href: '/dashboard/pacientes',          label: 'Pacientes' },
+  { href: '/dashboard/casos',              label: 'Casos' },
+  { href: '/dashboard/reportes',           label: 'Reportes' },
+  { href: '/dashboard/negocio',            label: '💼 Negocio' },
+  { href: '/dashboard/automatizaciones',   label: '⚡ Automatizar' },
 ];
 
 export function Navbar() {
