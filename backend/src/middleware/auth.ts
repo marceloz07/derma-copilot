@@ -16,7 +16,7 @@ import jwt, {
   TokenExpiredError,
 } from 'jsonwebtoken';
 import { env } from '../config/env';
-import { ApiResponse, AuthRequest, JwtPayload, UserRole } from '../types';
+import { AuthRequest, JwtPayload, UserRole } from '../types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers internos
@@ -83,10 +83,8 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
 
   if (!token) {
     securityLog('TOKEN_MISSING', req);
-    res.status(401).json({
-      success: false,
-      message: 'Token de autenticación requerido.',
-    } satisfies ApiResponse);
+    // Usamos 'error' (no 'message') para que el frontend lo lea con data['error']
+    res.status(401).json({ error: 'Token de autenticación requerido.' });
     return;
   }
 
@@ -95,10 +93,7 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
     next();
   } catch (err) {
     securityLog('TOKEN_INVALID', req, { reason: (err as Error).message });
-    res.status(401).json({
-      success: false,
-      message: jwtErrorMessage(err),
-    } satisfies ApiResponse);
+    res.status(401).json({ error: jwtErrorMessage(err) });
   }
 }
 
@@ -155,10 +150,7 @@ export function authorize(...roles: UserRole[]) {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
       // Protección extra: no debería llegar aquí sin `authenticate` previo
-      res.status(401).json({
-        success: false,
-        message: 'No autenticado.',
-      } satisfies ApiResponse);
+      res.status(401).json({ error: 'No autenticado.' });
       return;
     }
 
@@ -168,10 +160,7 @@ export function authorize(...roles: UserRole[]) {
         required: roles,
         userId: req.user.userId,
       });
-      res.status(403).json({
-        success: false,
-        message: `Acceso denegado. Rol requerido: ${roles.join(' | ')}.`,
-      } satisfies ApiResponse);
+      res.status(403).json({ error: `Acceso denegado. Rol requerido: ${roles.join(' | ')}.` });
       return;
     }
 
@@ -203,10 +192,7 @@ export function requireOwnership(
 ) {
   return async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     if (!req.user) {
-      res.status(401).json({
-        success: false,
-        message: 'No autenticado.',
-      } satisfies ApiResponse);
+      res.status(401).json({ error: 'No autenticado.' });
       return;
     }
 
@@ -224,10 +210,7 @@ export function requireOwnership(
           userId: req.user.userId,
           resourceOwner: resourceUserId,
         });
-        res.status(403).json({
-          success: false,
-          message: 'No tienes permiso para acceder a este recurso.',
-        } satisfies ApiResponse);
+        res.status(403).json({ error: 'No tienes permiso para acceder a este recurso.' });
         return;
       }
 

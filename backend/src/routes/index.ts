@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { ApiResponse } from '../types';
-import authRouter from './auth.routes';
+import authRouter      from './auth.routes';
+import casosRouter     from './casos.routes';
+import consultasRouter from './consultas.routes';
 
 const router = Router();
 
@@ -18,10 +20,8 @@ router.get('/health', (_req, res) => {
 });
 
 // ── Módulos ───────────────────────────────────────────────────────────────────
-router.use('/auth', authRouter);
-
-// TODO: añadir más rutas aquí
-// router.use('/patients', patientsRouter);
-// router.use('/consultations', consultationsRouter);
+router.use('/auth',      authRouter);
+router.use('/casos',     casosRouter);
+router.use('/consultas', consultasRouter);
 
 export default router;

@@ -1,5 +1,6 @@
 'use client';
 // app/dashboard/page.tsx — Derma Copilot Frontend
+import Link            from 'next/link';
 import { Navbar }         from '../../components/Navbar';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
 import { Card }           from '../../components/ui/Card';
@@ -29,7 +30,7 @@ const ESTADO_COLORS: Record<string, string> = {
 
 const QUICK_ACTIONS = [
   { label: 'Nuevo paciente',  icon: '➕', href: '#' },
-  { label: 'Analizar caso',   icon: '🔬', href: '#' },
+  { label: 'Analizar caso',   icon: '🔬', href: '/dashboard/casos/nuevo' },
   { label: 'Generar reporte', icon: '📄', href: '#' },
   { label: 'Ver agenda',      icon: '📅', href: '#' },
 ];
@@ -93,9 +94,17 @@ export default function DashboardPage() {
             </h2>
             <div className="flex flex-wrap gap-2">
               {QUICK_ACTIONS.map(a => (
-                <Button key={a.label} variant="secondary" size="sm">
-                  <span aria-hidden="true">{a.icon}</span> {a.label}
-                </Button>
+                a.href !== '#' ? (
+                  <Link key={a.label} href={a.href}>
+                    <Button variant="secondary" size="sm">
+                      <span aria-hidden="true">{a.icon}</span> {a.label}
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button key={a.label} variant="secondary" size="sm">
+                    <span aria-hidden="true">{a.icon}</span> {a.label}
+                  </Button>
+                )
               ))}
             </div>
           </div>
@@ -166,11 +175,13 @@ export default function DashboardPage() {
                 <p className="text-xs text-blue-200 mt-1">
                   Analiza fotos de lesiones, genera reportes y responde consultas clínicas.
                 </p>
-                <Button variant="ghost" size="sm"
-                  className="mt-3 bg-white/20 hover:bg-white/30 text-white border-0"
-                >
-                  Empezar análisis →
-                </Button>
+                <Link href="/dashboard/casos/nuevo">
+                  <Button variant="ghost" size="sm"
+                    className="mt-3 bg-white/20 hover:bg-white/30 text-white border-0"
+                  >
+                    Empezar análisis →
+                  </Button>
+                </Link>
               </Card>
             </div>
 

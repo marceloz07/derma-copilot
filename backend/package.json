@@ -10,22 +10,18 @@
   "scripts": {
     "dev": "nodemon",
     "dev:tsx": "tsx watch src/index.ts",
-
     "build": "rimraf dist && tsc --project tsconfig.json",
     "build:check": "tsc --noEmit && rimraf dist && tsc --project tsconfig.json",
-
     "start": "node dist/index.js",
     "start:prod": "cross-env NODE_ENV=production node dist/index.js",
-
     "typecheck": "tsc --noEmit",
     "typecheck:watch": "tsc --noEmit --watch",
-
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
-
     "clean": "rimraf dist"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.98.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
