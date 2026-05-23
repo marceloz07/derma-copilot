@@ -1,0 +1,349 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Prisma Schema — Derma Copilot
+// Basado en: DERMA_COPILOT_SPEC.md — Database Schema
+// ─────────────────────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// User — entidad de autenticación genérica
+//
+// Columnas en PostgreSQL : usuarios
+// Campos mínimos pedidos : email, password_hash, nombre, apellido
+//
+// Nota: Dermatologo es el actor principal de negocio (con perfil, integraciones,
+// etc.). User es una entidad de auth pura — útil como base si en el futuro
+// se añaden otros roles (admin, paciente con cuenta, etc.).
+// ─────────────────────────────────────────────────────────────────────────────
+model User {
+  // ── Identidad ──────────────────────────────────────────────────────────────
+  id           String @id @default(uuid())
+  email        String @unique
+  /// Contraseña hasheada con bcrypt. NUNCA texto plano.
+  passwordHash String @map("password_hash")
+
+  // ── Datos personales ───────────────────────────────────────────────────────
+  nombre   String
+  apellido String?
+
+  // ── Seguridad ──────────────────────────────────────────────────────────────
+  /// Hash SHA-256 del último refresh token emitido.
+  /// Permite invalidar sesiones desde el servidor (logout global, cambio de pass).
+  /// null = ninguna sesión activa.
+  refreshTokenHash String? @map("refresh_token_hash")
+
+  /// Número de intentos de login fallidos consecutivos.
+  /// Resetear a 0 en login exitoso.
+  loginAttempts Int @default(0) @map("login_attempts")
+
+  /// Cuenta bloqueada hasta esta fecha/hora (null = no bloqueada).
+  lockedUntil DateTime? @map("locked_until")
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  /// Soft-delete: si no es null la cuenta está desactivada.
+  deletedAt DateTime? @map("deleted_at")
+
+  // ── Índices ────────────────────────────────────────────────────────────────
+  /// Acelera consultas de usuarios activos (WHERE deleted_at IS NULL).
+  @@index([deletedAt])
+  /// Índice compuesto para login: busca por email solo entre cuentas activas.
+  @@index([email, deletedAt])
+  @@map("usuarios")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Dermatólogos (usuarios del sistema)
+// ─────────────────────────────────────────────────────────────────────────────
+model Dermatologo {
+  id               String  @id @default(uuid())
+  email            String  @unique
+  passwordHash     String  @map("password_hash")
+  nombre           String
+  apellido         String?
+  especialidad     String  @default("Dermatología")
+  numeroCedula     String? @unique @map("numero_cedula")
+  telefono         String?
+  clinica          String?
+  direccionClinica String? @map("direccion_clinica")
+  ciudad           String?
+  pais             String?
+  fotoPerfil       String? @map("foto_perfil")
+  bio              String?
+
+  // Integraciones
+  googleCalendarToken String? @map("google_calendar_token")
+  googleCalendarId    String? @map("google_calendar_id")
+  stripeCustomerId    String? @map("stripe_customer_id")
+  metaPixelId         String? @map("meta_pixel_id")
+  whatsappBusinessId  String? @map("whatsapp_business_id")
+
+  // Datos de negocio
+  precioConsulta  Decimal? @map("precio_consulta") @db.Decimal(10, 2)
+  moneda          String   @default("USD")
+  planSuscripcion String   @default("free") @map("plan_suscripcion")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // Relaciones
+  pacientes     Paciente[]
+  casos         Caso[]
+  consultas     Consulta[]
+  reportes      Reporte[]
+  transacciones Transaccion[]
+  sesionesChat  SesionChat[]
+  integraciones Integracion[]
+
+  @@map("dermatologos")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Pacientes
+// ─────────────────────────────────────────────────────────────────────────────
+model Paciente {
+  id            String  @id @default(uuid())
+  dermatologoId String  @map("dermatologist_id")
+  nombre        String
+  apellido      String?
+  email         String?
+  telefono      String?
+  whatsapp      String?
+
+  // Datos demográficos
+  edad   Int?
+  genero String?
+  ciudad String?
+  pais   String?
+
+  // Historial
+  fechaPrimerContacto DateTime @default(now()) @map("fecha_primer_contacto")
+  fuenteContacto      String?  @map("fuente_contacto")
+  metaAdId            String?  @map("meta_ad_id")
+
+  // Estado
+  estado String @default("nuevo")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  dermatologo   Dermatologo   @relation(fields: [dermatologoId], references: [id])
+  casos         Caso[]
+  consultas     Consulta[]
+  transacciones Transaccion[]
+
+  @@unique([dermatologoId, email])
+  @@map("pacientes")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Casos (análisis de foto + síntomas)
+// ─────────────────────────────────────────────────────────────────────────────
+model Caso {
+  id            String @id @default(uuid())
+  pacienteId    String @map("paciente_id")
+  dermatologoId String @map("dermatologist_id")
+
+  // Información clínica
+  tipoLesion          String? @map("tipo_lesion")
+  descripcion         String?
+  localizacionCuerpo  String? @map("localizacion_cuerpo")
+  duracionLesion      String? @map("duracion_lesion")
+  tratamientosPrevios String? @map("tratamientos_previos")
+
+  // Fotos
+  fotoUrl          String? @map("foto_url")
+  fotoCloudinaryId String? @map("foto_cloudinary_id")
+
+  // Análisis IA
+  analisisIa Json? @map("analisis_ia")
+
+  // Plan de tratamiento
+  diagnostico             String?
+  planTratamiento         String?  @map("plan_tratamiento")
+  sesionesEstimadas       Int?     @map("sesiones_estimadas")
+  duracionTratamientoDias Int?     @map("duracion_tratamiento_dias")
+  precioEstimado          Decimal? @map("precio_estimado") @db.Decimal(10, 2)
+
+  // Estado
+  estado String @default("analizado")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  paciente      Paciente      @relation(fields: [pacienteId], references: [id])
+  dermatologo   Dermatologo   @relation(fields: [dermatologoId], references: [id])
+  consultas     Consulta[]
+  reportes      Reporte[]
+  transacciones Transaccion[]
+  sesionesChat  SesionChat[]
+
+  @@map("casos")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Consultas (chat + asistente IA)
+// ─────────────────────────────────────────────────────────────────────────────
+model Consulta {
+  id            String @id @default(uuid())
+  casoId        String @map("caso_id")
+  pacienteId    String @map("paciente_id")
+  dermatologoId String @map("dermatologist_id")
+
+  // Chat
+  contenidoChat Json? @map("contenido_chat")
+
+  // Notas
+  notasDermatologo  String? @map("notas_dermatolog")
+  hallazgosClinicos String? @map("hallazgos_clinicos")
+
+  // Sugerencias IA
+  sugerenciasIa Json? @map("sugerencias_ia")
+
+  // Resultado
+  diagnosticoFinal      String? @map("diagnostico_final")
+  planFinal             String? @map("plan_final")
+  medicamentosRecetados Json?   @map("medicamentos_recetados")
+
+  fechaConsulta      DateTime  @default(now()) @map("fecha_consulta")
+  duracionMinutos    Int?      @map("duracion_minutos")
+  proximoSeguimiento DateTime? @map("proximo_seguimiento")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  caso        Caso        @relation(fields: [casoId], references: [id])
+  paciente    Paciente    @relation(fields: [pacienteId], references: [id])
+  dermatologo Dermatologo @relation(fields: [dermatologoId], references: [id])
+  reportes    Reporte[]
+
+  @@map("consultas")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reportes (historias clínicas)
+// ─────────────────────────────────────────────────────────────────────────────
+model Reporte {
+  id            String @id @default(uuid())
+  consultaId    String @map("consulta_id")
+  casoId        String @map("caso_id")
+  dermatologoId String @map("dermatologist_id")
+
+  // Contenido
+  titulo        String?
+  contenidoHtml String? @map("contenido_html")
+  contenidoPdf  String? @map("contenido_pdf")
+
+  // Generación
+  generadoPorIa Boolean @default(true) @map("generado_por_ia")
+  templateUsado String? @map("template_usado")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  consulta    Consulta    @relation(fields: [consultaId], references: [id])
+  caso        Caso        @relation(fields: [casoId], references: [id])
+  dermatologo Dermatologo @relation(fields: [dermatologoId], references: [id])
+
+  @@map("reportes")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Transacciones (pagos Stripe)
+// ─────────────────────────────────────────────────────────────────────────────
+model Transaccion {
+  id            String  @id @default(uuid())
+  dermatologoId String  @map("dermatologist_id")
+  pacienteId    String? @map("paciente_id")
+  casoId        String? @map("caso_id")
+
+  // Pago
+  stripePaymentId String? @unique @map("stripe_payment_id")
+  monto           Decimal @db.Decimal(10, 2)
+  moneda          String  @default("USD")
+  concepto        String?
+
+  // Estado
+  estado String @default("pendiente")
+
+  // Metadata
+  metadata Json?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  dermatologo Dermatologo @relation(fields: [dermatologoId], references: [id])
+  paciente    Paciente?   @relation(fields: [pacienteId], references: [id])
+  caso        Caso?       @relation(fields: [casoId], references: [id])
+
+  @@map("transacciones")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sesiones de chat con IA
+// ─────────────────────────────────────────────────────────────────────────────
+model SesionChat {
+  id            String  @id @default(uuid())
+  dermatologoId String  @map("dermatologist_id")
+  casoId        String? @map("caso_id")
+
+  // Chat
+  mensajes     Json?
+  contextoCaso Json? @map("contexto_caso")
+
+  // Estado
+  activa     Boolean @default(true)
+  tipoSesion String  @default("consulta") @map("tipo_sesion")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  dermatologo Dermatologo @relation(fields: [dermatologoId], references: [id])
+  caso        Caso?       @relation(fields: [casoId], references: [id])
+
+  @@map("sesiones_chat")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Integraciones externas por dermatólogo
+// ─────────────────────────────────────────────────────────────────────────────
+model Integracion {
+  id            String @id @default(uuid())
+  dermatologoId String @map("dermatologist_id")
+
+  // Tokens (cifrados en BD con ENCRYPTION_KEY)
+  googleAccessToken  String? @map("google_access_token")
+  googleRefreshToken String? @map("google_refresh_token")
+  stripeApiKey       String? @map("stripe_api_key")
+
+  // Status
+  googleCalendarConectado Boolean @default(false) @map("google_calendar_conectado")
+  stripeConectado         Boolean @default(false) @map("stripe_conectado")
+  whatsappConectado       Boolean @default(false) @map("whatsapp_conectado")
+
+  // Metadata
+  metadata Json?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  dermatologo Dermatologo @relation(fields: [dermatologoId], references: [id])
+
+  @@map("integraciones")
+}

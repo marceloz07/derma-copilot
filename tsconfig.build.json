@@ -1,0 +1,34 @@
+{
+  // ─────────────────────────────────────────────────────────────────────────
+  // tsconfig.build.json — Derma Copilot
+  //
+  // Propósito : compilación para producción  (npm run build)
+  // Extiende  : tsconfig.json (hereda todas las opciones)
+  // Diferencias vs tsconfig.json:
+  //   · excludes tests y archivos de seeding
+  //   · no genera declarationMap (innecesario en prod)
+  //   · removeComments: true (reduce tamaño del output)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  "extends": "./tsconfig.json",
+
+  "compilerOptions": {
+    "declarationMap": false,
+    "removeComments": true,
+    "sourceMap":      true    // mantener para Sentry / error tracking en prod
+  },
+
+  "include": [
+    "src/**/*"
+    // prisma/seed.ts excluido: no se compila en el artefacto de producción
+  ],
+
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "prisma/seed.ts",
+    "coverage"
+  ]
+}

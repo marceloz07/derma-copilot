@@ -1,0 +1,27 @@
+# Dependencias
+node_modules/
+
+# Build
+dist/
+
+# Variables de entorno (¡nunca commitear!)
+.env
+.env.local
+.env.production
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Tests
+coverage/
