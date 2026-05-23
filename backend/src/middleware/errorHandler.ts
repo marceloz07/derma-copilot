@@ -23,37 +23,30 @@ export function errorHandler(
   res: Response,
   _next: NextFunction,
 ): void {
-  // Errores de validación Zod
+  // Errores de validación Zod que burbujean hasta aquí
+  // (normalmente capturados en validate() de las rutas, pero por si acaso)
   if (err instanceof ZodError) {
-    const errors: Record<string, string[]> = {};
-    err.errors.forEach((e) => {
-      const field = e.path.join('.');
-      errors[field] = errors[field] ? [...errors[field], e.message] : [e.message];
-    });
-    res.status(422).json({
-      success: false,
-      message: 'Error de validación',
-      errors,
-    } satisfies ApiResponse);
+    const fields = err.errors.map((e) => ({
+      field:   e.path.join('.') || '_body',
+      message: e.message,
+    }));
+    res.status(422).json({ error: 'Datos de entrada inválidos.', fields });
     return;
   }
 
-  // Errores operacionales conocidos
+  // Errores operacionales conocidos (409, 401, 404, 400…)
+  // Usamos `error` (no `message`) para que el frontend pueda leerlo con data['error']
   if (err instanceof AppError) {
-    res.status(err.statusCode).json({
-      success: false,
-      message: err.message,
-    } satisfies ApiResponse);
+    res.status(err.statusCode).json({ error: err.message });
     return;
   }
 
   // Errores inesperados — no exponer detalles en producción
   console.error('🔴 Error no manejado:', err);
   res.status(500).json({
-    success: false,
-    message: 'Error interno del servidor',
-    ...(env.isDev && { data: { stack: err.stack } }),
-  } satisfies ApiResponse);
+    error: 'Error interno del servidor',
+    ...(env.isDev && { detail: err.stack }),
+  });
 }
 
 // ── 404 ───────────────────────────────────────────────────────────────────────

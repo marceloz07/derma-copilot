@@ -49,26 +49,37 @@ const authRateLimiter = rateLimit({
 // Schemas de validación Zod
 // ─────────────────────────────────────────────────────────────────────────────
 const registerSchema = z.object({
-  name: z
+  nombre: z
     .string({ required_error: 'El nombre es requerido' })
-    .min(2, 'El nombre debe tener al menos 2 caracteres')
+    .min(1, 'El nombre es requerido')
     .max(100, 'El nombre no puede superar los 100 caracteres')
     .trim(),
 
+  apellido: z
+    .string()
+    .max(100, 'El apellido no puede superar los 100 caracteres')
+    .trim()
+    .optional(),
+
   email: z
-    .string({ required_error: 'El email es requerido' })
-    .email('Email inválido')
+    .string({ required_error: 'El correo es requerido' })
+    .email('Correo electrónico inválido')
     .toLowerCase(),
 
   password: z
     .string({ required_error: 'La contraseña es requerida' })
-    .min(8, 'Mínimo 8 caracteres')
-    .max(72, 'Máximo 72 caracteres') // límite de bcrypt
-    .regex(/[A-Z]/, 'Debe contener al menos una letra mayúscula')
-    .regex(/[a-z]/, 'Debe contener al menos una letra minúscula')
-    .regex(/[0-9]/, 'Debe contener al menos un número'),
+    .min(8, 'La contraseña debe tener al menos 8 caracteres')
+    .max(72, 'Máximo 72 caracteres')
+    .regex(/[A-Z]/, 'Debe incluir al menos una letra mayúscula')
+    .regex(/[0-9]/, 'Debe incluir al menos un número'),
 
-  role: z.nativeEnum(UserRole).optional().default(UserRole.PATIENT),
+  especialidad: z
+    .string()
+    .max(100)
+    .trim()
+    .optional(),
+
+  role: z.nativeEnum(UserRole).optional().default(UserRole.DOCTOR),
 });
 
 const loginSchema = z.object({
@@ -112,22 +123,22 @@ function validate(schema: ZodSchema) {
     const result = schema.safeParse(req.body);
 
     if (!result.success) {
-      const errors: Record<string, string[]> = {};
-      result.error.errors.forEach((e) => {
-        const field = e.path.join('.') || '_body';
-        errors[field] = errors[field] ? [...errors[field], e.message] : [e.message];
-      });
+      // Formato compatible con el frontend: { error, fields: [{field, message}] }
+      // El frontend muestra cada error en el input correspondiente.
+      const fields = result.error.errors.map((e) => ({
+        field:   e.path.join('.') || '_body',
+        message: e.message,
+      }));
 
       res.status(422).json({
-        success: false,
-        message: 'Datos de entrada inválidos.',
-        errors,
-      } satisfies ApiResponse);
+        error:  'Datos de entrada inválidos.',
+        fields,
+      });
       return;
     }
 
-    // Reemplaza req.body con los datos ya normalizados por Zod
-    // (emails en minúsculas, roles con default, strings trimados, etc.)
+    // Sobreescribe req.body con los datos normalizados por Zod
+    // (emails en minúsculas, roles con default, strings trimados…)
     req.body = result.data;
     next();
   };

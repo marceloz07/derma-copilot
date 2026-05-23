@@ -2,29 +2,35 @@ import bcrypt from 'bcryptjs';
 import { env } from '../config/env';
 import { UserRole } from '../types';
 
-// ── Modelo en memoria (reemplazar con ORM real: Prisma, TypeORM, Mongoose) ────
+// ── Modelo en memoria (reemplazar con Prisma cuando la BD esté lista) ─────────
 export interface User {
-  id: string;
-  name: string;
-  email: string;
-  password: string;
-  role: UserRole;
-  createdAt: Date;
-  updatedAt: Date;
+  id:              string;
+  nombre:          string;
+  apellido:        string | null;
+  email:           string;
+  password:        string;
+  especialidad:    string;
+  numeroCedula:    string | null;
+  telefono:        string | null;
+  planSuscripcion: string;
+  role:            UserRole;
+  createdAt:       Date;
+  updatedAt:       Date;
 }
 
 // Simulación de BD en memoria — reemplazar con acceso real a BD
 const usersDb = new Map<string, User>();
-
 let idCounter = 1;
 
 export const UserModel = {
-  async create(data: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
+  async create(
+    data: Omit<User, 'id' | 'createdAt' | 'updatedAt'>,
+  ): Promise<User> {
     const hashedPassword = await bcrypt.hash(data.password, env.BCRYPT_SALT_ROUNDS);
     const user: User = {
       ...data,
-      password: hashedPassword,
-      id: String(idCounter++),
+      password:  hashedPassword,
+      id:        String(idCounter++),
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -54,7 +60,7 @@ export const UserModel = {
     return true;
   },
 
-  // Omite la contraseña al devolver el usuario
+  /** Devuelve el usuario sin la contraseña. */
   sanitize(user: User): Omit<User, 'password'> {
     const { password: _password, ...safe } = user;
     return safe;

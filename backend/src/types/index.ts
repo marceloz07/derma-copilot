@@ -36,10 +36,12 @@ export interface ApiResponse<T = unknown> {
 
 // ── DTOs de autenticación ─────────────────────────────────────────────────────
 export interface RegisterDto {
-  name: string;
-  email: string;
-  password: string;
-  role?: UserRole;
+  nombre:        string;
+  apellido?:     string;
+  email:         string;
+  password:      string;
+  especialidad?: string;
+  role?:         UserRole;
 }
 
 export interface LoginDto {

@@ -84,15 +84,18 @@ export async function register(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const result = await authService.register(req.body);
+    const { user, tokens } = await authService.register(req.body);
 
-    auditLog('REGISTER', req, { userId: result.user.id, email: result.user.email });
+    auditLog('REGISTER', req, { userId: user.id, email: user.email });
 
+    // Formato plano que el frontend consume directamente:
+    // { message, user, accessToken, refreshToken }
     res.status(201).json({
-      success: true,
-      message: 'Cuenta creada exitosamente.',
-      data: result,
-    } satisfies ApiResponse);
+      message:      'Cuenta creada exitosamente.',
+      user,
+      accessToken:  tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    });
   } catch (err) {
     auditLog('REGISTER_FAILED', req, { email: req.body?.email, reason: String(err) });
     next(err instanceof AppError ? err : toAppError(err));
@@ -117,15 +120,16 @@ export async function login(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const result = await authService.login(req.body);
+    const { user, tokens } = await authService.login(req.body);
 
-    auditLog('LOGIN', req, { userId: result.user.id, email: result.user.email });
+    auditLog('LOGIN', req, { userId: user.id, email: user.email });
 
     res.status(200).json({
-      success: true,
-      message: 'Sesión iniciada correctamente.',
-      data: result,
-    } satisfies ApiResponse);
+      message:      'Sesión iniciada correctamente.',
+      user,
+      accessToken:  tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    });
   } catch (err) {
     auditLog('LOGIN_FAILED', req, { email: req.body?.email });
     next(err instanceof AppError ? err : toAppError(err));
@@ -190,10 +194,10 @@ export async function refresh(
     auditLog('REFRESH', req);
 
     res.status(200).json({
-      success: true,
-      message: 'Tokens renovados correctamente.',
-      data: tokens,
-    } satisfies ApiResponse);
+      message:      'Tokens renovados correctamente.',
+      accessToken:  tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    });
   } catch (err) {
     next(err instanceof AppError ? err : toAppError(err));
   }
@@ -222,11 +226,8 @@ export async function me(
     const user = await UserModel.findById(req.user!.userId);
     if (!user) throw new AppError(404, 'Usuario no encontrado. La cuenta pudo haber sido eliminada.');
 
-    res.status(200).json({
-      success: true,
-      message: 'Perfil del usuario autenticado.',
-      data: UserModel.sanitize(user),
-    } satisfies ApiResponse);
+    // El frontend espera exactamente { user: {...} } sin wrapper
+    res.status(200).json({ user: UserModel.sanitize(user) });
   } catch (err) {
     next(err instanceof AppError ? err : toAppError(err));
   }

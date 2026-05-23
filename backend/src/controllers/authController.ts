@@ -5,14 +5,14 @@ import { ApiResponse, AuthRequest, UserRole } from '../types';
 
 // ── Schemas de validación ─────────────────────────────────────────────────────
 const registerSchema = z.object({
-  name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres').max(100),
-  email: z.string().email('Email inválido'),
-  password: z
-    .string()
-    .min(8, 'La contraseña debe tener al menos 8 caracteres')
-    .regex(/[A-Z]/, 'Debe contener al menos una mayúscula')
-    .regex(/[0-9]/, 'Debe contener al menos un número'),
-  role: z.nativeEnum(UserRole).optional(),
+  nombre:       z.string().min(1, 'El nombre es requerido').max(100),
+  apellido:     z.string().max(100).optional(),
+  email:        z.string().email('Email inválido'),
+  password:     z.string().min(8, 'La contraseña debe tener al menos 8 caracteres')
+                  .regex(/[A-Z]/, 'Debe contener al menos una mayúscula')
+                  .regex(/[0-9]/, 'Debe contener al menos un número'),
+  especialidad: z.string().max(100).optional(),
+  role:         z.nativeEnum(UserRole).optional(),
 });
 
 const loginSchema = z.object({

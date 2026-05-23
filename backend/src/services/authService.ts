@@ -12,10 +12,15 @@ export class AuthService {
     }
 
     const user = await UserModel.create({
-      name: dto.name,
-      email: dto.email,
-      password: dto.password,
-      role: dto.role ?? UserRole.PATIENT,
+      nombre:          dto.nombre,
+      apellido:        dto.apellido ?? null,
+      email:           dto.email,
+      password:        dto.password,
+      especialidad:    dto.especialidad ?? 'Dermatología',
+      numeroCedula:    null,
+      telefono:        null,
+      planSuscripcion: 'free',
+      role:            dto.role ?? UserRole.DOCTOR,
     });
 
     const tokens = this.generateTokens({ userId: user.id, email: user.email, role: user.role });
